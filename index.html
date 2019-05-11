@@ -325,7 +325,7 @@ $(document).ready(function () {
 </script>
 <div id="section" class="section level2">
 <h2>目录</h2>
-<p><a href="#RMDBS简介和MySQL入门">RMDBS简介和MySQL入门</a><br> <a href="#选择和筛选 - Select及Where语句">选择和筛选 - Select及Where语句</a><br> <a href="#条件判断 - case when语句">条件判断 - case when语句</a><br></p>
+<p><a href="#RMDBS简介和MySQL入门">RMDBS简介和MySQL入门</a><br> <a href="#选择和筛选 - Select及Where语句">选择和筛选 - Select及Where语句</a><br> <a href="#条件判断 - case when语句">条件判断 - case when语句</a><br> <a href="#字符匹配">字符匹配</a><br> <a href="#联合多表查询">联合多表查询</a><br></p>
 </div>
 <div id="rmdbsmysql" class="section level2">
 <h2>RMDBS简介和MySQL入门</h2>
@@ -498,26 +498,351 @@ from sakila.country</code></pre>
 <div id="section-11" class="section level3">
 <h3>缺失值处理</h3>
 <p>插入一个缺失值</p>
-<pre><code>insert into student values (2015001, &#39;Performing Art&#39;, &#39;Bachelor&#39;, &#39;Musical&#39;, &#39;Changyong&#39;, &#39;Liao&#39;,NULL)</code></pre>
+<pre><code>insert into school.student values (2015001, &#39;Performing Art&#39;, &#39;Bachelor&#39;, &#39;Musical&#39;, &#39;Changyong&#39;, &#39;Liao&#39;,NULL)</code></pre>
 <p>查找90后</p>
-<pre><code>select * from student
+<pre><code>select * from school.student
 where bday &gt; &#39;1989-12-31&#39;</code></pre>
 <p>查找90前</p>
-<pre><code>select * from student
+<pre><code>select * from school.student
 where bday &lt;= &#39;1989-12-31&#39;</code></pre>
 <p>都找不到，因为NULL做条件时候当做False处理。可以用<code>is NULL</code>来判断一个值是不是缺失值</p>
-<pre><code>select * from student
+<pre><code>select * from school.student
 where bday is NULL</code></pre>
 <p>同样可以使用的有<code>ISNULL</code>函数</p>
-<pre><code>select * from student
+<pre><code>select * 
+from school.student
 where ISNULL(bday)</code></pre>
 <pre><code>select firstname, lastname,
   case
     when isnull(bday) then &#39;1900-12-31&#39;
     else bday
   end as bday_est
-from student</code></pre>
+from school.student</code></pre>
 </div>
+</div>
+<div id="section-12" class="section level2">
+<h2>字符匹配</h2>
+<div id="section-13" class="section level3">
+<h3>通配符</h3>
+<p>在搜索数据库中的数据时，SQL 通配符可以替代一个或多个字符，进而实现对于字符或者文本变量的模糊搜索。在SQL当中，可以使用<code>like</code>语句来使用通配符。</p>
+<div id="section-14" class="section level4">
+<h4>常见通配符</h4>
+<table>
+<thead>
+<tr class="header">
+<th>通配符</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>%</td>
+<td>替代一个或多个字符</td>
+</tr>
+<tr class="even">
+<td>_</td>
+<td>仅替代一个字符</td>
+</tr>
+<tr class="odd">
+<td>[charlist]</td>
+<td>字符列中的任何单一字符</td>
+</tr>
+<tr class="even">
+<td>[^charlist]/[!charlist]</td>
+<td>不在字符列中的任何单一字符</td>
+</tr>
+</tbody>
+</table>
+<p>注意： 1. MySQL不支持[charlist]类型的通配符，其他数据库软件可能支持; 2. 如果想要匹配&quot;_“，可以使用转义字符”\&quot;.</p>
+</div>
+<div id="section-15" class="section level4">
+<h4>通配符实例</h4>
+<p>有如下字符</p>
+<pre><code>Beijing
+Beika
+Shanghai
+Shandong
+Tokyo
+New_York</code></pre>
+<ol style="list-style-type: decimal">
+<li>以B开头的<code>B%</code></li>
+</ol>
+<pre>
+<b>Beijing</b>
+<b>Beika</b>
+Shanghai
+Shandong
+Tokyo
+New_York
+</pre>
+<ol start="2" style="list-style-type: decimal">
+<li>中间包含an的<code>%an%</code></li>
+</ol>
+<pre>
+Beijing
+Beika
+<b>Shanghai</b>
+<b>Shandong</b>
+Tokyo
+New_York
+</pre>
+<ol start="3" style="list-style-type: decimal">
+<li>第一个字符以后是hanghai的<code>_hanghai</code></li>
+</ol>
+<pre>
+Beijing
+Beika
+<b>Shanghai</b>
+Shandong
+Tokyo
+New_York
+</pre>
+<ol start="4" style="list-style-type: decimal">
+<li>第一个字符是B或者T<code>[BT]%</code></li>
+</ol>
+<pre>
+<b>Beijing</b>
+<b>Beika</b>
+Shanghai
+Shandong
+<b>Tokyo</b>
+New_York
+</pre>
+<ol start="5" style="list-style-type: decimal">
+<li>第一个字符不是B或者T<code>[!BT]%</code></li>
+</ol>
+<pre>
+Beijing
+Beika
+<b>Shanghai</b>
+<b>Shandong</b>
+Tokyo
+New_York
+</pre>
+<ol start="6" style="list-style-type: decimal">
+<li>带有&quot;_&quot;的<code>%\_%</code></li>
+</ol>
+<pre>
+Beijing
+Beika
+Shanghai
+Shandong
+Tokyo
+<b>New_York</b>
+</pre>
+</div>
+<div id="sql" class="section level4">
+<h4>通配符在SQL中的应用</h4>
+<ol style="list-style-type: decimal">
+<li>名字以K开头的学生</li>
+</ol>
+<pre><code>select *
+from school.student
+where firstname like &quot;K%&quot;</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>名字第一个字符后面是“ukun”的学生</li>
+</ol>
+<pre><code>select *
+from school.student
+where firstname like &#39;_ukun&#39;</code></pre>
+</div>
+</div>
+<div id="section-16" class="section level3">
+<h3>正则表达式</h3>
+<p>正则表达式，又称规则表达式。（英语：Regular Expression，在代码中常简写为regex、regexp或RE），计算机科学的一个概念。正则表达式是对字符串操作的一种逻辑公式，就是用事先定义好的一些特定字符、及这些特定字符的组合，组成一个“规则字符串”，这个“规则字符串”用来表达对字符串的一种过滤逻辑。</p>
+<div id="section-17" class="section level4">
+<h4>常见正则表达式语法</h4>
+<p>正则表达式语法较为复杂，常用的有</p>
+<table>
+<colgroup>
+<col width="3%"></col>
+<col width="96%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th>字符</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>\</td>
+<td>将下一个字符标记为一个特殊字符、或一个原义字符、或一个向后引用、或一个八进制转义符。例如，“n”匹配字符“n”。“”匹配一个换行符。串行“\”匹配“”而“(”则匹配“(”。</td>
+</tr>
+<tr class="even">
+<td>^</td>
+<td>匹配输入字符串的开始位置。如果设置了RegExp对象的Multiline属性，^也匹配“”或“之后的位置。</td>
+</tr>
+<tr class="odd">
+<td>$</td>
+<td>匹配输入字符串的结束位置。如果设置了RegExp对象的Multiline属性，$也匹配“”或“之前的位置。</td>
+</tr>
+<tr class="even">
+<td>*</td>
+<td>匹配前面的子表达式零次或多次。例如，zo*能匹配“z”以及“zoo”。</td>
+</tr>
+<tr class="odd">
+<td>+</td>
+<td>匹配前面的子表达式一次或多次。例如，“zo+”能匹配“zo”以及“zoo”，但不能匹配“z”。</td>
+</tr>
+<tr class="even">
+<td>?</td>
+<td>匹配前面的子表达式零次或一次。例如，“do(es)?”可以匹配“does”或“does”中的“do”</td>
+</tr>
+<tr class="odd">
+<td>?</td>
+<td>当该字符紧跟在任何一个其他限制符（*,+,?，{n}，{n,}，{n,m}）后面时，匹配模式是非贪婪的。非贪婪模式尽可能少的匹配所搜索的字符串，而默认的贪婪模式则尽可能多的匹配所搜索的字符串。例如，对于字符串“oooo”，“o+?”将匹配单个“o”，而“o+”将匹配所有“o”。</td>
+</tr>
+<tr class="even">
+<td>.</td>
+<td>匹配除“”之外的任何单个字符。要匹配包括“”在内的任何字符，请使用像“(.</td>
+</tr>
+<tr class="odd">
+<td>x</td>
+<td>y</td>
+</tr>
+<tr class="even">
+<td>[xyz]</td>
+<td>字符集合。匹配所包含的任意一个字符。例如，“[abc]”可以匹配“plain”中的“a”。</td>
+</tr>
+<tr class="odd">
+<td>[^xyz]</td>
+<td>负值字符集合。匹配未包含的任意字符。例如，“[^abc]”可以匹配“plain”中的“p”。</td>
+</tr>
+<tr class="even">
+<td>[a-z]</td>
+<td>字符范围。匹配指定范围内的任意字符。例如，“[a-z]”可以匹配“a”到“z”范围内的任意小写字母字符。</td>
+</tr>
+<tr class="odd">
+<td>[^a-z]</td>
+<td>负值字符范围。匹配任何不在指定范围内的任意字符。例如，“[^a-z]”可以匹配任何不在“a”到“z”范围内的任意字符。</td>
+</tr>
+<tr class="even">
+<td>\n</td>
+<td>匹配一个换行符。等价于0a和。</td>
+</tr>
+<tr class="odd">
+<td>\s</td>
+<td>匹配任何空白字符，包括空格、制表符、换页符等等。等价于[ 。</td>
+</tr>
+<tr class="even">
+<td>\S</td>
+<td>匹配任何非空白字符。等价于[^ 。</td>
+</tr>
+<tr class="odd">
+<td>\t</td>
+<td>匹配一个制表符。等价于09和。</td>
+</tr>
+<tr class="even">
+<td>\w</td>
+<td>匹配包括下划线的任何单词字符。等价于“[A-Za-z0-9_]”。</td>
+</tr>
+<tr class="odd">
+<td>\W</td>
+<td>匹配任何非单词字符。等价于“[^A-Za-z0-9_]”。</td>
+</tr>
+</tbody>
+</table>
+<p>参考资料：<br> <a href="https://www.jb51.net/shouce/jquery/regexp.html">表格参考</a><br> <a href="https://www.regular-expressions.info">正则表达式教程</a><br> <a href="https://regex101.com">正则表达式在线测试</a></p>
+<p>正则表达式的强大之处在于可以通过“|”组合使用。</p>
+</div>
+<div id="section-18" class="section level4">
+<h4>正则表达式实例</h4>
+<ol style="list-style-type: decimal">
+<li>所有数字和字母</li>
+</ol>
+<p><code>[0-9a-zA-Z]+</code></p>
+<ol start="2" style="list-style-type: decimal">
+<li>开头是B结尾是y</li>
+</ol>
+<p><code>^B.*y$</code></p>
+<ol start="3" style="list-style-type: decimal">
+<li>所有数字和字母，或者结尾是&quot;*&quot;</li>
+</ol>
+<p><code>[0-9a-zA-Z]+|\*$</code></p>
+</div>
+<div id="sql-1" class="section level4">
+<h4>正则表达式在SQL中的应用</h4>
+<p>如果想使用正则表达式，那么可以使用<code>rlkie</code>语句</p>
+<ol style="list-style-type: decimal">
+<li>名字结尾是g的</li>
+</ol>
+<pre><code>select firstname, lastname
+from school.student
+where firstname rlike &#39;.*g$&#39;</code></pre>
+</div>
+</div>
+</div>
+<div id="section-19" class="section level2">
+<h2>联合多表查询</h2>
+<p>在实际应用中经常需要从多个数据表中读取数据，这就是JOIN操作。</p>
+<div id="join" class="section level3">
+<h3>JOIN的分类</h3>
+<p>JOIN 按照功能大致分为如下三类：</p>
+<table>
+<thead>
+<tr class="header">
+<th>JOIN类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>INNER JOIN（内连接,或等值连接）</td>
+<td>获取两个表中字段匹配关系的记录。</td>
+</tr>
+<tr class="even">
+<td>LEFT JOIN（左连接）</td>
+<td>获取左表所有记录，即使右表没有对应匹配的记录。</td>
+</tr>
+<tr class="odd">
+<td>RIGHT JOIN（右连接）</td>
+<td>与 LEFT JOIN相反，用于获取右表所有记录，即使左表没有对应匹配的记录。</td>
+</tr>
+<tr class="even">
+<td>FULL JOIN（全连接）</td>
+<td>左连接和又连接的组合版本，左右表都有对应匹配记录</td>
+</tr>
+</tbody>
+</table>
+<div id="join-1" class="section level4">
+<h4>JOIN的实例</h4>
+<ol style="list-style-type: decimal">
+<li>INNER JOIN</li>
+</ol>
+<pre><code>select s.sid, s.firstname, s.lastname, r.cid
+from student s
+inner join registration r
+on s.sid = r.sid</code></pre>
+<p>有时也可以简化成下面的语法</p>
+<pre><code>select s.sid, s.firstname, s.lastname, r.cid
+from student s, registration r
+where s.sid = r.sid</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>LEFT JOIN</li>
+</ol>
+<pre><code>select s.sid, s.firstname, s.lastname, r.cid
+from student s
+left join registration r
+on s.sid = r.sid</code></pre>
+<p>可以看出来蔡徐坤没有选课</p>
+<ol start="3" style="list-style-type: decimal">
+<li>RIGHT JOIN</li>
+</ol>
+<pre><code>select c.cid, c.class, r.sid
+from registration r
+right join classes c
+on r.cid = c.cid</code></pre>
+<p>可以看出来数学、物理、篮球课没有人选</p>
+<ol start="4" style="list-style-type: decimal">
+<li>FULL JOIN</li>
+</ol>
+<p>MySQL不支持FULL JOIN</p>
+</div>
+</div>
+</div>
+<div id="section-20" class="section level2">
+<h2>汇总和函数</h2>
 </div>
 
 

@@ -23,6 +23,9 @@ output: html_document
 <a href="#RMDBS简介和MySQL入门">RMDBS简介和MySQL入门</a><br>
 <a href="#选择和筛选 - Select及Where语句">选择和筛选 - Select及Where语句</a><br>
 <a href="#条件判断 - case when语句">条件判断 - case when语句</a><br>
+<a href="#字符匹配">字符匹配</a><br>
+<a href="#联合多表查询">联合多表查询</a><br>
+
 
 ## RMDBS简介和MySQL入门
 
@@ -198,31 +201,32 @@ from sakila.country
 
 插入一个缺失值
 ```
-insert into student values (2015001, 'Performing Art', 'Bachelor', 'Musical', 'Changyong', 'Liao',NULL)
+insert into school.student values (2015001, 'Performing Art', 'Bachelor', 'Musical', 'Changyong', 'Liao',NULL)
 ```
 
 查找90后
 ```
-select * from student
+select * from school.student
 where bday > '1989-12-31'
 ```
 
 查找90前
 ```
-select * from student
+select * from school.student
 where bday <= '1989-12-31'
 ```
 都找不到，因为NULL做条件时候当做False处理。可以用`is NULL`来判断一个值是不是缺失值
 
 ```
-select * from student
+select * from school.student
 where bday is NULL
 ```
 
 同样可以使用的有`ISNULL`函数
 
 ```
-select * from student
+select * 
+from school.student
 where ISNULL(bday)
 ```
 
@@ -232,7 +236,243 @@ select firstname, lastname,
     when isnull(bday) then '1900-12-31'
     else bday
   end as bday_est
-from student
+from school.student
 ```
 
+## 字符匹配
+
+### 通配符
+在搜索数据库中的数据时，SQL 通配符可以替代一个或多个字符，进而实现对于字符或者文本变量的模糊搜索。在SQL当中，可以使用`like`语句来使用通配符。
+
+#### 常见通配符
+
+通配符|描述
+---|---
+%	|替代一个或多个字符
+_	|仅替代一个字符
+[charlist]|字符列中的任何单一字符
+[^charlist]/[!charlist]|不在字符列中的任何单一字符
+
+注意：
+1. MySQL不支持[charlist]类型的通配符，其他数据库软件可能支持;
+2. 如果想要匹配"_"，可以使用转义字符"\\".
+
+#### 通配符实例
+
+有如下字符
+```
+Beijing
+Beika
+Shanghai
+Shandong
+Tokyo
+New_York
+```
+
+1. 以B开头的`B%`
+
+<pre>
+<b>Beijing</b>
+<b>Beika</b>
+Shanghai
+Shandong
+Tokyo
+New_York
+</pre>
+
+2. 中间包含an的`%an%`
+
+<pre>
+Beijing
+Beika
+<b>Shanghai</b>
+<b>Shandong</b>
+Tokyo
+New_York
+</pre>
+
+3. 第一个字符以后是hanghai的`_hanghai`
+
+<pre>
+Beijing
+Beika
+<b>Shanghai</b>
+Shandong
+Tokyo
+New_York
+</pre>
+
+4. 第一个字符是B或者T`[BT]%`
+
+<pre>
+<b>Beijing</b>
+<b>Beika</b>
+Shanghai
+Shandong
+<b>Tokyo</b>
+New_York
+</pre>
+
+
+5. 第一个字符不是B或者T`[!BT]%`
+
+<pre>
+Beijing
+Beika
+<b>Shanghai</b>
+<b>Shandong</b>
+Tokyo
+New_York
+</pre>
+
+6. 带有"_"的`%\_%`
+
+<pre>
+Beijing
+Beika
+Shanghai
+Shandong
+Tokyo
+<b>New_York</b>
+</pre>
+
+#### 通配符在SQL中的应用
+
+1. 名字以K开头的学生
+
+```
+select *
+from school.student
+where firstname like "K%"
+```
+2. 名字第一个字符后面是"ukun"的学生
+```
+select *
+from school.student
+where firstname like '_ukun'
+```
+
+### 正则表达式
+
+正则表达式，又称规则表达式。（英语：Regular Expression，在代码中常简写为regex、regexp或RE），计算机科学的一个概念。正则表达式是对字符串操作的一种逻辑公式，就是用事先定义好的一些特定字符、及这些特定字符的组合，组成一个“规则字符串”，这个“规则字符串”用来表达对字符串的一种过滤逻辑。
+
+#### 常见正则表达式语法
+
+正则表达式语法较为复杂，常用的有
+
+| 字符   | 描述                                                                                                                                                                                                                                             |
+|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| \      | 将下一个字符标记为一个特殊字符、或一个原义字符、或一个向后引用、或一个八进制转义符。例如，“n”匹配字符“n”。“\n”匹配一个换行符。串行“\\”匹配“\”而“\(”则匹配“(”。                                                                                   |
+| ^      | 匹配输入字符串的开始位置。如果设置了RegExp对象的Multiline属性，^也匹配“\n”或“\r”之后的位置。                                                                                                                                                     |
+| $      | 匹配输入字符串的结束位置。如果设置了RegExp对象的Multiline属性，$也匹配“\n”或“\r”之前的位置。                                                                                                                                                     |
+| *      | 匹配前面的子表达式零次或多次。例如，zo*能匹配“z”以及“zoo”。                                                                                                                                                                         |
+| +      | 匹配前面的子表达式一次或多次。例如，“zo+”能匹配“zo”以及“zoo”，但不能匹配“z”。                                                                                                                                                       |
+| ?      | 匹配前面的子表达式零次或一次。例如，“do(es)?”可以匹配“does”或“does”中的“do”                                                                                                                                                      |
+| ?      | 当该字符紧跟在任何一个其他限制符（*,+,?，{n}，{n,}，{n,m}）后面时，匹配模式是非贪婪的。非贪婪模式尽可能少的匹配所搜索的字符串，而默认的贪婪模式则尽可能多的匹配所搜索的字符串。例如，对于字符串“oooo”，“o+?”将匹配单个“o”，而“o+”将匹配所有“o”。 |
+| .      | 匹配除“\n”之外的任何单个字符。要匹配包括“\n”在内的任何字符，请使用像“(.|\n)”的模式。                                                                                                                                                             |
+| x|y    | 匹配x或y。例如，“z|food”能匹配“z”或“food”。“(z|f)ood”则匹配“zood”或“food”。                                                                                                                                                                      |
+| [xyz]  | 字符集合。匹配所包含的任意一个字符。例如，“[abc]”可以匹配“plain”中的“a”。 |
+| [^xyz] | 负值字符集合。匹配未包含的任意字符。例如，“[^abc]”可以匹配“plain”中的“p”。                                                                                                                                                                       |
+| [a-z]  | 字符范围。匹配指定范围内的任意字符。例如，“[a-z]”可以匹配“a”到“z”范围内的任意小写字母字符。                                                                                                                                                      |
+| [^a-z] | 负值字符范围。匹配任何不在指定范围内的任意字符。例如，“[^a-z]”可以匹配任何不在“a”到“z”范围内的任意字符。                                                                                                                                         |
+| \\n     | 匹配一个换行符。等价于\x0a和\cJ。                                                                                                                                                                                                                |
+| \\s     | 匹配任何空白字符，包括空格、制表符、换页符等等。等价于[ \f\n\r\t\v]。|
+| \\S     | 匹配任何非空白字符。等价于[^ \f\n\r\t\v]。                                                                                                                                                                                                       |
+| \\t     | 匹配一个制表符。等价于\x09和\cI。                                                                                                                                                                                                                |
+| \\w     | 匹配包括下划线的任何单词字符。等价于“[A-Za-z0-9_]”。                                                                                                                                                                                             |
+| \\W     | 匹配任何非单词字符。等价于“[^A-Za-z0-9_]”。                                                                                                                                                                                                      |
+参考资料：<br>
+[表格参考](https://www.jb51.net/shouce/jquery/regexp.html)<br>
+[正则表达式教程](https://www.regular-expressions.info)<br>
+[正则表达式在线测试](https://regex101.com)
+
+正则表达式的强大之处在于可以通过"|"组合使用。
+
+
+#### 正则表达式实例
+
+1. 所有数字和字母
+
+`[0-9a-zA-Z]+`
+
+2. 开头是B结尾是y
+
+`^B.*y$`
+
+3. 所有数字和字母，或者结尾是"*"
+
+`[0-9a-zA-Z]+|\*$`
+
+#### 正则表达式在SQL中的应用
+
+如果想使用正则表达式，那么可以使用`rlkie`语句
+
+1. 名字结尾是g的
+```
+select firstname, lastname
+from school.student
+where firstname rlike '.*g$'
+```
+
+## 联合多表查询
+
+在实际应用中经常需要从多个数据表中读取数据，这就是JOIN操作。
+
+### JOIN的分类
+
+JOIN 按照功能大致分为如下三类：
+
+JOIN类型|作用
+---|---
+INNER JOIN（内连接,或等值连接）|获取两个表中字段匹配关系的记录。
+LEFT JOIN（左连接）|获取左表所有记录，即使右表没有对应匹配的记录。
+RIGHT JOIN（右连接）| 与 LEFT JOIN相反，用于获取右表所有记录，即使左表没有对应匹配的记录。
+FULL JOIN（全连接）| 左连接和又连接的组合版本，左右表都有对应匹配记录
+
+#### JOIN的实例
+
+1. INNER JOIN
+
+```
+select s.sid, s.firstname, s.lastname, r.cid
+from student s
+inner join registration r
+on s.sid = r.sid
+```
+有时也可以简化成下面的语法
+
+```
+select s.sid, s.firstname, s.lastname, r.cid
+from student s, registration r
+where s.sid = r.sid
+```
+
+2. LEFT JOIN
+
+```
+select s.sid, s.firstname, s.lastname, r.cid
+from student s
+left join registration r
+on s.sid = r.sid
+```
+
+可以看出来蔡徐坤没有选课
+
+3. RIGHT JOIN
+
+```
+select c.cid, c.class, r.sid
+from registration r
+right join classes c
+on r.cid = c.cid
+```
+
+可以看出来数学、物理、篮球课没有人选
+
+4. FULL JOIN
+
+MySQL不支持FULL JOIN
+
+
+## 汇总和函数
 
