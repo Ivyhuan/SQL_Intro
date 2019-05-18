@@ -255,7 +255,9 @@ h6 {
 </style>
 
 
+</head>
 
+<body>
 
 <style type="text/css">
 .main-container {
@@ -280,92 +282,22 @@ img {
 button.code-folding-btn:focus {
   outline: none;
 }
-summary {
-  display: list-item;
-}
 </style>
 
 
+
+<div class="container-fluid main-container">
 
 <!-- tabsets -->
-
-<style type="text/css">
-.tabset-dropdown > .nav-tabs {
-  display: inline-table;
-  max-height: 500px;
-  min-height: 44px;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
-  font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
-  font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
-}
-
-.tabset-dropdown > .nav-tabs > li.active {
-  display: block;
-}
-
-.tabset-dropdown > .nav-tabs > li > a,
-.tabset-dropdown > .nav-tabs > li > a:focus,
-.tabset-dropdown > .nav-tabs > li > a:hover {
-  border: none;
-  display: inline-block;
-  border-radius: 4px;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
-  display: block;
-  float: none;
-}
-
-.tabset-dropdown > .nav-tabs > li {
-  display: none;
-}
-</style>
-
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
 });
 </script>
 
 <!-- code folding -->
 
 
-
-
-</head>
-
-<body>
-
-
-<div class="container-fluid main-container">
 
 
 
@@ -375,8 +307,8 @@ $(document).ready(function () {
 
 
 <h1 class="title toc-ignore">关系型数据库和MySQL操作</h1>
-<h4 class="author">Xuyan</h4>
-<h4 class="date">2019/5/9</h4>
+<h4 class="author"><em>Xuyan</em></h4>
+<h4 class="date"><em>2019/5/9</em></h4>
 
 </div>
 
@@ -828,54 +760,50 @@ where firstname like &#39;_ukun&#39;</code></pre>
 <td>匹配前面的子表达式零次或一次。例如，“do(es)?”可以匹配“does”或“does”中的“do”</td>
 </tr>
 <tr class="odd">
-<td>?</td>
-<td>当该字符紧跟在任何一个其他限制符（*,+,?，{n}，{n,}，{n,m}）后面时，匹配模式是非贪婪的。非贪婪模式尽可能少的匹配所搜索的字符串，而默认的贪婪模式则尽可能多的匹配所搜索的字符串。例如，对于字符串“oooo”，“o+?”将匹配单个“o”，而“o+”将匹配所有“o”。</td>
-</tr>
-<tr class="even">
 <td>.</td>
 <td>匹配除“”之外的任何单个字符。要匹配包括“”在内的任何字符，请使用像“(.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>x</td>
 <td>y</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>[xyz]</td>
 <td>字符集合。匹配所包含的任意一个字符。例如，“[abc]”可以匹配“plain”中的“a”。</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>[^xyz]</td>
 <td>负值字符集合。匹配未包含的任意字符。例如，“[^abc]”可以匹配“plain”中的“p”。</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>[a-z]</td>
 <td>字符范围。匹配指定范围内的任意字符。例如，“[a-z]”可以匹配“a”到“z”范围内的任意小写字母字符。</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>[^a-z]</td>
 <td>负值字符范围。匹配任何不在指定范围内的任意字符。例如，“[^a-z]”可以匹配任何不在“a”到“z”范围内的任意字符。</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>\n</td>
-<td>匹配一个换行符。等价于0a和。</td>
+<td>匹配一个换行符。等价于<code>\x0a</code>和<code>\cJ</code>。</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>\s</td>
-<td>匹配任何空白字符，包括空格、制表符、换页符等等。等价于[ 。</td>
-</tr>
-<tr class="even">
-<td>\S</td>
-<td>匹配任何非空白字符。等价于[^ 。</td>
+<td>匹配任何空白字符，包括空格、制表符、换页符等等。等价于<code>[ \f\n\r\t\v]</code>。</td>
 </tr>
 <tr class="odd">
-<td>\t</td>
-<td>匹配一个制表符。等价于09和。</td>
+<td>\S</td>
+<td>匹配任何非空白字符。等价于<code>[^ \f\n\r\t\v]</code>。</td>
 </tr>
 <tr class="even">
+<td>\t</td>
+<td>匹配一个制表符。等价于<code>\x09</code>和<code>\cI</code>。</td>
+</tr>
+<tr class="odd">
 <td>\w</td>
 <td>匹配包括下划线的任何单词字符。等价于“[A-Za-z0-9_]”。</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>\W</td>
 <td>匹配任何非单词字符。等价于“[^A-Za-z0-9_]”。</td>
 </tr>
@@ -1053,7 +981,7 @@ group by lastname
 
 select school, lastname, avg(height)
 from school.student
-group by lastname
+group by school, lastname
 having school = &#39;Business&#39;</code></pre>
 </div>
 </div>
